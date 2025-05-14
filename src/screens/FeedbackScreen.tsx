@@ -12,7 +12,8 @@ import { useInterview } from '../contexts/InterviewContext';
 export const FeedbackScreen = ({ navigation }: any) => {
   const { state, resetInterview } = useInterview();
 
-  if (!state.feedback || !state.selectedProfession || !state.selectedPosition) {
+  if (!state.feedback || (!state.selectedProfession && !state.customProfession) || 
+      (!state.selectedPosition && !state.customPosition)) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
@@ -27,13 +28,22 @@ export const FeedbackScreen = ({ navigation }: any) => {
       </SafeAreaView>
     );
   }
+  
+  // Meslek ve pozisyon bilgisini hem normal seçim hem de özel eklemeler için ele al
+  const professionTitle = state.selectedProfession 
+    ? state.selectedProfession.title 
+    : state.customProfession;
+  
+  const positionTitle = state.selectedPosition 
+    ? state.selectedPosition.title 
+    : state.customPosition;
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Mülakat Geri Bildirimi</Text>
         <Text style={styles.subtitle}>
-          {state.selectedProfession.title} - {state.selectedPosition.title}
+          {professionTitle} - {positionTitle}
         </Text>
       </View>
 

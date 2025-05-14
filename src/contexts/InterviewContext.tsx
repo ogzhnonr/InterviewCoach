@@ -7,6 +7,8 @@ import { Question, Feedback, generateQuestions, generateFeedback } from '../serv
 const initialState: InterviewState = {
   selectedProfession: null,
   selectedPosition: null,
+  customProfession: null,
+  customPosition: null,
   questions: [],
   answers: [],
   feedback: null,
@@ -16,8 +18,10 @@ const initialState: InterviewState = {
 // Context tanımı
 interface InterviewContextType {
   state: InterviewState;
-  setProfession: (profession: Profession) => void;
-  setPosition: (position: Position) => void;
+  setProfession: (profession: Profession | null) => void;
+  setPosition: (position: Position | null) => void;
+  setCustomProfession: (professionName: string) => void;
+  setCustomPosition: (positionName: string) => void;
   generateInterviewQuestions: () => void;
   setAnswer: (questionIndex: number, answer: string) => void;
   submitAnswers: () => void;
@@ -31,32 +35,62 @@ export const InterviewProvider: React.FC<{children: React.ReactNode}> = ({ child
   const [state, setState] = useState<InterviewState>(initialState);
 
   // Meslek seçimi
-  const setProfession = (profession: Profession) => {
+  const setProfession = (profession: Profession | null) => {
     setState(prev => ({
       ...prev,
       selectedProfession: profession,
+      customProfession: profession ? null : prev.customProfession,
       selectedPosition: null,
+      customPosition: null,
+    }));
+  };
+
+  // Özel meslek ekleme
+  const setCustomProfession = (professionName: string) => {
+    setState(prev => ({
+      ...prev,
+      selectedProfession: null,
+      customProfession: professionName,
+      selectedPosition: null,
+      customPosition: null,
     }));
   };
 
   // Pozisyon seçimi
-  const setPosition = (position: Position) => {
+  const setPosition = (position: Position | null) => {
     setState(prev => ({
       ...prev,
       selectedPosition: position,
+      customPosition: position ? null : prev.customPosition,
+    }));
+  };
+
+  // Özel pozisyon ekleme
+  const setCustomPosition = (positionName: string) => {
+    setState(prev => ({
+      ...prev,
+      selectedPosition: null,
+      customPosition: positionName,
     }));
   };
 
   // Soruları oluştur
   const generateInterviewQuestions = () => {
-    if (!state.selectedProfession || !state.selectedPosition) {
+    if ((!state.selectedProfession && !state.customProfession) || 
+        (!state.selectedPosition && !state.customPosition)) {
       return;
     }
 
-    const questions = generateQuestions(
-      state.selectedProfession.id,
-      state.selectedPosition.id
-    );
+    // Özel meslek veya pozisyon seçilmişse, onlar için rastgele ID oluştur
+    const professionId = state.selectedProfession ? 
+      state.selectedProfession.id : 
+      `custom-${state.customProfession?.toLowerCase().replace(/\s+/g, '-')}`;
+    
+    const positionId = state.selectedPosition ? 
+      state.selectedPosition.id : 
+      `custom-${state.customPosition?.toLowerCase().replace(/\s+/g, '-')}`;
+
+    const questions = generateQuestions(professionId, positionId);
 
     setState(prev => ({
       ...prev,
@@ -79,13 +113,23 @@ export const InterviewProvider: React.FC<{children: React.ReactNode}> = ({ child
 
   // Cevapları gönder ve geri bildirim al
   const submitAnswers = () => {
-    if (!state.selectedProfession || !state.selectedPosition) {
+    if ((!state.selectedProfession && !state.customProfession) || 
+        (!state.selectedPosition && !state.customPosition)) {
       return;
     }
 
+    // Özel meslek veya pozisyon seçilmişse, onlar için rastgele ID oluştur
+    const professionId = state.selectedProfession ? 
+      state.selectedProfession.id : 
+      `custom-${state.customProfession?.toLowerCase().replace(/\s+/g, '-')}`;
+    
+    const positionId = state.selectedPosition ? 
+      state.selectedPosition.id : 
+      `custom-${state.customPosition?.toLowerCase().replace(/\s+/g, '-')}`;
+
     const feedback = generateFeedback(
-      state.selectedProfession.id,
-      state.selectedPosition.id,
+      professionId,
+      positionId,
       state.questions,
       state.answers
     );
@@ -108,6 +152,8 @@ export const InterviewProvider: React.FC<{children: React.ReactNode}> = ({ child
         state,
         setProfession,
         setPosition,
+        setCustomProfession,
+        setCustomPosition,
         generateInterviewQuestions,
         setAnswer,
         submitAnswers,

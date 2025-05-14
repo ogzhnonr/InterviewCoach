@@ -53,7 +53,9 @@ export const QuestionsScreen = ({ navigation }: any) => {
     }
   };
 
-  if (!state.selectedProfession || !state.selectedPosition || state.questions.length === 0) {
+  if ((!state.selectedProfession && !state.customProfession) || 
+      (!state.selectedPosition && !state.customPosition) || 
+      state.questions.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
@@ -70,6 +72,15 @@ export const QuestionsScreen = ({ navigation }: any) => {
   }
 
   const currentQuestion = state.questions[currentQuestionIndex];
+  
+  // Meslek ve pozisyon bilgisini hem normal seçim hem de özel eklemeler için ele al
+  const professionTitle = state.selectedProfession 
+    ? state.selectedProfession.title 
+    : state.customProfession;
+  
+  const positionTitle = state.selectedPosition 
+    ? state.selectedPosition.title 
+    : state.customPosition;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -81,7 +92,7 @@ export const QuestionsScreen = ({ navigation }: any) => {
         <View style={styles.header}>
           <Text style={styles.title}>Mülakat Sorusu {currentQuestionIndex + 1}/{state.questions.length}</Text>
           <Text style={styles.subtitle}>
-            {state.selectedProfession.title} - {state.selectedPosition.title}
+            {professionTitle} - {positionTitle}
           </Text>
         </View>
 
