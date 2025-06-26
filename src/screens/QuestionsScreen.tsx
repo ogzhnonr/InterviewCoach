@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useInterview } from '../contexts/InterviewContext';
 
@@ -17,7 +18,7 @@ export const QuestionsScreen = ({ navigation }: any) => {
   const { state, setAnswer, submitAnswers } = useInterview();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (state.answers[currentQuestionIndex].trim() === '') {
       Alert.alert('Uyarı', 'Lütfen soruyu cevaplayınız.');
       return;
@@ -37,8 +38,8 @@ export const QuestionsScreen = ({ navigation }: any) => {
           },
           {
             text: 'Evet',
-            onPress: () => {
-              submitAnswers();
+            onPress: async () => {
+              await submitAnswers();
               navigation.navigate('Feedback');
             },
           },
@@ -52,6 +53,17 @@ export const QuestionsScreen = ({ navigation }: any) => {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
   };
+
+  if (state.loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007bff" />
+          <Text style={styles.loadingText}>Sorular oluşturuluyor...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if ((!state.selectedProfession && !state.customProfession) || 
       (!state.selectedPosition && !state.customPosition) || 
@@ -247,5 +259,16 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    fontSize: 18,
+    color: '#007bff',
+    marginTop: 20,
   },
 }); 

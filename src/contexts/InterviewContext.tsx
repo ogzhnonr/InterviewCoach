@@ -13,6 +13,7 @@ const initialState: InterviewState = {
   answers: [],
   feedback: null,
   currentStep: 'selection',
+  loading: false,
 };
 
 // Context tanımı
@@ -22,9 +23,9 @@ interface InterviewContextType {
   setPosition: (position: Position | null) => void;
   setCustomProfession: (professionName: string) => void;
   setCustomPosition: (positionName: string) => void;
-  generateInterviewQuestions: () => void;
+  generateInterviewQuestions: () => Promise<void>;
   setAnswer: (questionIndex: number, answer: string) => void;
-  submitAnswers: () => void;
+  submitAnswers: () => Promise<void>;
   resetInterview: () => void;
 }
 
@@ -75,29 +76,44 @@ export const InterviewProvider: React.FC<{children: React.ReactNode}> = ({ child
   };
 
   // Soruları oluştur
-  const generateInterviewQuestions = () => {
+  const generateInterviewQuestions = async () => {
     if ((!state.selectedProfession && !state.customProfession) || 
         (!state.selectedPosition && !state.customPosition)) {
       return;
     }
 
-    // Özel meslek veya pozisyon seçilmişse, onlar için rastgele ID oluştur
-    const professionId = state.selectedProfession ? 
-      state.selectedProfession.id : 
-      `custom-${state.customProfession?.toLowerCase().replace(/\s+/g, '-')}`;
-    
-    const positionId = state.selectedPosition ? 
-      state.selectedPosition.id : 
-      `custom-${state.customPosition?.toLowerCase().replace(/\s+/g, '-')}`;
-
-    const questions = generateQuestions(professionId, positionId);
-
+    // Yükleme durumunu başlat
     setState(prev => ({
       ...prev,
-      questions,
-      answers: questions.map(() => ''),
-      currentStep: 'questions',
+      loading: true,
     }));
+
+    try {
+      // Özel meslek veya pozisyon seçilmişse, onlar için rastgele ID oluştur
+      const professionId = state.selectedProfession ? 
+        state.selectedProfession.id : 
+        `custom-${state.customProfession?.toLowerCase().replace(/\s+/g, '-')}`;
+      
+      const positionId = state.selectedPosition ? 
+        state.selectedPosition.id : 
+        `custom-${state.customPosition?.toLowerCase().replace(/\s+/g, '-')}`;
+
+      const questions = await generateQuestions(professionId, positionId);
+
+      setState(prev => ({
+        ...prev,
+        questions,
+        answers: questions.map(() => ''),
+        currentStep: 'questions',
+        loading: false,
+      }));
+    } catch (error) {
+      console.error('Soru oluşturma hatası:', error);
+      setState(prev => ({
+        ...prev,
+        loading: false,
+      }));
+    }
   };
 
   // Cevap belirleme
@@ -112,33 +128,48 @@ export const InterviewProvider: React.FC<{children: React.ReactNode}> = ({ child
   };
 
   // Cevapları gönder ve geri bildirim al
-  const submitAnswers = () => {
+  const submitAnswers = async () => {
     if ((!state.selectedProfession && !state.customProfession) || 
         (!state.selectedPosition && !state.customPosition)) {
       return;
     }
 
-    // Özel meslek veya pozisyon seçilmişse, onlar için rastgele ID oluştur
-    const professionId = state.selectedProfession ? 
-      state.selectedProfession.id : 
-      `custom-${state.customProfession?.toLowerCase().replace(/\s+/g, '-')}`;
-    
-    const positionId = state.selectedPosition ? 
-      state.selectedPosition.id : 
-      `custom-${state.customPosition?.toLowerCase().replace(/\s+/g, '-')}`;
-
-    const feedback = generateFeedback(
-      professionId,
-      positionId,
-      state.questions,
-      state.answers
-    );
-
+    // Yükleme durumunu başlat
     setState(prev => ({
       ...prev,
-      feedback,
-      currentStep: 'feedback',
+      loading: true,
     }));
+
+    try {
+      // Özel meslek veya pozisyon seçilmişse, onlar için rastgele ID oluştur
+      const professionId = state.selectedProfession ? 
+        state.selectedProfession.id : 
+        `custom-${state.customProfession?.toLowerCase().replace(/\s+/g, '-')}`;
+      
+      const positionId = state.selectedPosition ? 
+        state.selectedPosition.id : 
+        `custom-${state.customPosition?.toLowerCase().replace(/\s+/g, '-')}`;
+
+      const feedback = await generateFeedback(
+        professionId,
+        positionId,
+        state.questions,
+        state.answers
+      );
+
+      setState(prev => ({
+        ...prev,
+        feedback,
+        currentStep: 'feedback',
+        loading: false,
+      }));
+    } catch (error) {
+      console.error('Geri bildirim oluşturma hatası:', error);
+      setState(prev => ({
+        ...prev,
+        loading: false,
+      }));
+    }
   };
 
   // Sıfırla

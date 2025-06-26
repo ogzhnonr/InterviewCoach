@@ -170,6 +170,15 @@ export const ProfessionSelectionScreen = ({ navigation }: any) => {
             dropDownContainerStyle={styles.dropdownList}
             textStyle={styles.dropdownText}
             listMode="SCROLLVIEW"
+            maxHeight={200}
+            scrollViewProps={{
+              nestedScrollEnabled: true,
+              showsVerticalScrollIndicator: true,
+              indicatorStyle: 'black',
+            }}
+            listItemContainerStyle={styles.listItemContainer}
+            listItemLabelStyle={styles.listItemLabel}
+            zIndex={3000}
             searchable
             searchPlaceholder="Ara..."
             disabled={isProfessionDropdownDisabled}
@@ -231,6 +240,15 @@ export const ProfessionSelectionScreen = ({ navigation }: any) => {
               dropDownContainerStyle={styles.dropdownList}
               textStyle={styles.dropdownText}
               listMode="SCROLLVIEW"
+              maxHeight={200}
+              scrollViewProps={{
+                nestedScrollEnabled: true,
+                showsVerticalScrollIndicator: true,
+                indicatorStyle: 'black',
+              }}
+              listItemContainerStyle={styles.listItemContainer}
+              listItemLabelStyle={styles.listItemLabel}
+              zIndex={2000}
               searchable
               searchPlaceholder="Ara..."
               disabled={!state.selectedProfession || isPositionDropdownDisabled}
@@ -340,8 +358,25 @@ const styles = StyleSheet.create({
     borderColor: '#ced4da',
     backgroundColor: '#fff',
     borderRadius: 8,
+    maxHeight: 200,
+    zIndex: 1000,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    paddingHorizontal: 2,
   },
   dropdownText: {
+    fontSize: 16,
+    color: '#495057',
+  },
+  listItemContainer: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  listItemLabel: {
     fontSize: 16,
     color: '#495057',
   },

@@ -10,4 +10,5 @@ export interface InterviewState {
   answers: string[];
   feedback: Feedback | null;
   currentStep: 'selection' | 'questions' | 'feedback';
+  loading: boolean;
 } 
