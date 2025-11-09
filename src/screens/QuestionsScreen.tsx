@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   View,
+  Button,
   Text,
   StyleSheet,
   TouchableOpacity,
@@ -13,10 +14,14 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useInterview } from '../contexts/InterviewContext';
+import { getAzureTTSAudioUrl } from '../services/azureTTSService';
+import { AudioPlayer } from '../components/AudioPlayer';
 
 export const QuestionsScreen = ({ navigation }: any) => {
   const { state, setAnswer, submitAnswers } = useInterview();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [audioUri, setAudioUri] = useState<string | null>(null);
+  const [audioLoading, setAudioLoading] = useState(false);
 
   const handleNext = async () => {
     if (state.answers[currentQuestionIndex].trim() === '') {
@@ -94,6 +99,16 @@ export const QuestionsScreen = ({ navigation }: any) => {
     ? state.selectedPosition.title 
     : state.customPosition;
 
+  async function handlePlayQuestionAudio() {
+    setAudioLoading(true);
+    try {
+      const uri = await getAzureTTSAudioUrl({ text: currentQuestion.question });
+      setAudioUri(uri);
+    } finally {
+      setAudioLoading(false);
+    }
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
@@ -111,6 +126,11 @@ export const QuestionsScreen = ({ navigation }: any) => {
         <ScrollView style={styles.content}>
           <View style={styles.questionContainer}>
             <Text style={styles.questionText}>{currentQuestion.question}</Text>
+            <View style={{ marginTop: 16 }}>
+              <Button title="Soruyu Seslendir" onPress={handlePlayQuestionAudio} disabled={audioLoading} />
+              {audioLoading && <ActivityIndicator />}
+              {audioUri && <AudioPlayer audioUri={audioUri} />}
+            </View>
           </View>
 
           <View style={styles.answerContainer}>
